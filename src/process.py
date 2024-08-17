@@ -41,36 +41,37 @@ def read_csv(csvpath):
     return df
 
 
-def dataset_split(dataset, SRS_CHAMBER):
+def dataset_split(dataset, chamber):
     # find missing data index
-    missingdata_index = dataset[dataset[SRS_CHAMBER].isnull()].index
-    print(missingdata_index)
+    print ('total data shape', len(dataset))
+    missingdata_index = dataset[dataset[chamber].isnull()].index
+    print('missing data index', missingdata_index)
     # drop the missing index so the rest of the data are available for training
     available_data = dataset.drop(missingdata_index, axis=0)
-    print(available_data.shape)
+    print('available data shape', available_data.shape)
 
     # split
     train = available_data.sample(frac=0.8, random_state=200)
     test = available_data.drop(train.index)
-    print(train.shape, test.shape)
+    print('train/test shape', train.shape, test.shape)
 
-    y_train = train.filter([SRS_CHAMBER]).copy()
-    print(y_train.shape)  # training input features
+    y_train = train.filter([chamber]).copy()
+    print('training y shape', y_train.shape)  # training input features
 
-    x_train = train.drop([SRS_CHAMBER], axis=1)
-    print(x_train.shape)  # training target
+    x_train = train.drop([chamber], axis=1)
+    print('training x shape', x_train.shape)  # training target
 
-    y_test = test.filter([SRS_CHAMBER]).copy()
-    print(y_test.shape)  # testing input features
+    y_test = test.filter([chamber]).copy()
+    print('testing y shape', y_test.shape)  # testing input features
 
-    x_test = test.drop([SRS_CHAMBER], axis=1)
-    print(x_test.shape)  # testing target
+    x_test = test.drop([chamber], axis=1)
+    print('testing x shape', x_test.shape)  # testing target
 
-    x_predict = dataset[dataset.index.isin(missingdata_index)].drop([
-        SRS_CHAMBER], axis=1)
-    print(x_predict.shape)
+    x_inference = dataset[dataset.index.isin(missingdata_index)].drop([
+        chamber], axis=1)
+    print('inference x shape', x_inference.shape)
 
-    return x_train, y_train, x_test, y_test, x_predict
+    return x_train, y_train, x_test, y_test, x_inference
 
 
 def count_by_seasons(df):
@@ -87,15 +88,3 @@ def count_by_seasons(df):
         'month == 1').shape[0] + df.query('month == 2').shape[0]
     assert total == spring + summer + autumn + winter, 'numbers not match'
     return spring, summer, autumn, winter
-
-# use regex to find SRS CHAMBER LIST
-
-
-def get_srs_chambers(site_to_fill):
-    site_df = read_csv(site_dict[site_to_fill])
-    r = re.compile("^FD.*_Flux_Median$", re.IGNORECASE)  # case insensitive
-    srs_chambers_list = list(filter(r.match, list(site_df.columns)))
-    print(srs_chambers_list)
-    return site_df, srs_chambers_list
-
-
