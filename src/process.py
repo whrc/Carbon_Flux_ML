@@ -67,8 +67,8 @@ def dataset_split(dataset, chamber):
     x_test = test.drop([chamber], axis=1)
     print('testing x shape', x_test.shape)  # testing target
 
-    x_inference = dataset[dataset.index.isin(missingdata_index)].drop([
-        chamber], axis=1)
+    x_inference = dataset[dataset[chamber].isnull()].drop([chamber], axis=1)
+
     print('inference x shape', x_inference.shape)
 
     return x_train, y_train, x_test, y_test, x_inference
